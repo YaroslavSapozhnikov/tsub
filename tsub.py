@@ -1,6 +1,7 @@
 import sys
 import curses
 
+
 def main(stdscr):
     # Clear screen
     stdscr.clear()
