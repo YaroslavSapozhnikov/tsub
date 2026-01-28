@@ -1,3 +1,5 @@
+import time
+
 try:
     from pyiArduinoI2Cexpander import *
     test_mode = False
@@ -6,7 +8,10 @@ except ModuleNotFoundError:
 
 
 class FlashI2C(object):
+
     def __init__(self, addr):
+        self.result = []
+
         if test_mode:
             return
 
@@ -21,6 +26,10 @@ class FlashI2C(object):
         for i in range(8):
             result.append(exp.analogReader(i))
         return result
+
+    def run(self):
+        self.result = self.read()
+        time.sleep(1)
 
 
 if __name__ == '__main__':
