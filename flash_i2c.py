@@ -1,3 +1,4 @@
+import threading
 import time
 
 try:
@@ -8,9 +9,9 @@ except ModuleNotFoundError:
 
 
 class FlashI2C(object):
-
-    def __init__(self, addr):
+    def __init__(self, addr, lock: threading.Lock):
         self.result = []
+        self.lock = lock
 
         if test_mode:
             return
@@ -20,11 +21,16 @@ class FlashI2C(object):
             exp.pinMode(i, INPUT, ANALOG)
 
     def read(self):
-        if test_mode:
-            return [2048]*8
         result = []
-        for i in range(8):
-            result.append(exp.analogReader(i))
+        if test_mode:
+            for i in range(8):
+                with self.lock:
+                    time.sleep(0.005)
+                    result.append(2048)
+        else:
+            for i in range(8):
+                with self.lock:
+                    result.append(exp.analogReader(i))
         return result
 
     def run(self):
