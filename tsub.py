@@ -2,36 +2,68 @@ import sys
 import curses
 import threading
 import flash_i2c
+import keyboard
+import configparser
+
+
+__shutdown = False
+
+
+def shutdown():
+    global __shutdown
+    __shutdown = True
 
 
 def main(stdscr):
+    config = configparser.ConfigParser()
+    config.read('tsub.ini')
+    all_sections = config.sections()
+
     # Clear screen
     stdscr.clear()
 
-    exp = []
-    exp_thr = []
+    stdscr.addstr(7, 0, str(all_sections))
+    stdscr.addstr(8, 0, 'Press "F12" to exit...')
+    stdscr.refresh()
     lock = threading.Lock()
-    for i in range(3):
-        exp.append(flash_i2c.FlashI2C(0x0a+i, lock))
-        exp_thr.append(threading.Thread(target=exp[i].run, name=f'exp{i}'))
-        exp_thr[i].start()
+    exps = []
+    for sect in all_sections:
+        try:
+            addr = int(sect)
+            if 9 < addr < 128:
+                sens_list = []
+                options = config.options(sect)
+                for opt in options:
+                    try:
+                        sens = int(opt)
+                        if 0 <= sens < 8:
+                            sens_list.append(sens)
+                    except ValueError:
+                        continue
+                exps.append(flash_i2c.FlashI2C(addr, lock, sens_list=sens_list))
+        except ValueError:
+            continue
 
-    # Get input from user
-    for i in range(3):
-        v = stdscr.getstr(i, 5, 10).decode('utf-8')
-        stdscr.addstr(i, 0, f'V{i} = {v}')
-        stdscr.refresh()
+    while not __shutdown:
+        exp_thr = []
+        for i in range(len(exps)):
+            exp_thr.append(threading.Thread(target=exps[i].run, name=f'exp{i}'))
+            exp_thr[i].start()
 
-    # Display results
-    stdscr.addstr(8, 0, 'Press any key to exit...')
+        for thr in exp_thr:
+            thr.join()
+
+        for i in range(len(exps)):
+            v = exps[i].result
+            stdscr.addstr(i, 0, f'V{i} = {v}')
+            stdscr.refresh()
+            exps[i].cnt += 1
 
     stdscr.getch()  # Wait for keypress
 
-    for i in range(3):
-        exp_thr[i].join()
-
 
 if __name__ == '__main__':
+    keyboard.add_hotkey("F12", shutdown)
     # try:
     #     curses.wrapper(main)
     # except Exception as e:
