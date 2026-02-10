@@ -10,12 +10,13 @@ except ModuleNotFoundError:
 
 
 class FlashI2C(object):
-    def __init__(self, addr, lock: threading.Lock, sens_list=[]):
+    def __init__(self, addr, lock: threading.Lock, sens_list: list[int]):
         self.__shutdown = False
+        self.addr = addr
         self.result = []
         self.lock = lock
         self.cnt = 0
-        self.sens_list = sens_list
+        self.sens_list: list[int] = sens_list
 
         if test_mode:
             return
@@ -28,16 +29,16 @@ class FlashI2C(object):
         self.__shutdown = True
 
     def read(self):
-        result = []
+        result = [None] * 8
         if test_mode:
-            for _ in self.sens_list:
+            for i in range(len(self.sens_list)):
                 with self.lock:
                     time.sleep(0.01)
-                    result.append(self.cnt)
+                    result[self.sens_list[i]] = self.cnt
         else:
             for i in self.sens_list:
                 with self.lock:
-                    result.append(exp.analogReader(i))
+                    result[self.sens_list[i]] = (exp.analogReader(self.sens_list[i]))
         return result
 
     def run(self):

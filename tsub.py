@@ -22,11 +22,9 @@ def main(stdscr):
     # Clear screen
     stdscr.clear()
 
-    stdscr.addstr(7, 0, str(all_sections))
-    stdscr.addstr(8, 0, 'Press "F12" to exit...')
-    stdscr.refresh()
     lock = threading.Lock()
     exps = []
+    sensors = []
     for sect in all_sections:
         try:
             addr = int(sect)
@@ -38,11 +36,23 @@ def main(stdscr):
                         sens = int(opt)
                         if 0 <= sens < 8:
                             sens_list.append(sens)
+                            sensors.append({'n': len(exps), 'addr': addr, 'input': sens, 'name': config.get(sect, opt)})
                     except ValueError:
                         continue
                 exps.append(flash_i2c.FlashI2C(addr, lock, sens_list=sens_list))
         except ValueError:
             continue
+
+    stdscr.addstr(len(sensors) + 1, 0, 'Press "F12" to exit...')
+    stdscr.refresh()
+
+    max_len = 0
+    for i in range(len(sensors)):
+        sens_str = f'{sensors[i]['name']}: '
+        if len(sens_str) > max_len:
+            max_len = len(sens_str)
+        stdscr.addstr(i, 0, sens_str)
+    stdscr.refresh()
 
     while not __shutdown:
         exp_thr = []
@@ -53,11 +63,10 @@ def main(stdscr):
         for thr in exp_thr:
             thr.join()
 
-        for i in range(len(exps)):
-            v = exps[i].result
-            stdscr.addstr(i, 0, f'V{i} = {v}')
+        for i in range(len(sensors)):
+            stdscr.addstr(i, max_len, f'{exps[sensors[i]['n']].result[sensors[i]['input']]}')
             stdscr.refresh()
-            exps[i].cnt += 1
+            exps[sensors[i]['n']].cnt += 1
 
     stdscr.getch()  # Wait for keypress
 
