@@ -2,11 +2,21 @@ import sys
 import curses
 import threading
 import flash_i2c
-import keyboard
 import configparser
+from pynput import keyboard
 
 
 __shutdown = False
+
+
+def kbd_f12():
+    global __shutdown
+    # В этом блоке будет работать слушатель событий.
+    with keyboard.Events() as events:
+        for event in events:
+            if event.key == keyboard.Key.f12:
+                __shutdown = True
+                break
 
 
 def shutdown():
@@ -72,11 +82,14 @@ def main(stdscr):
 
 
 if __name__ == '__main__':
-    keyboard.add_hotkey("F12", shutdown)
+    thr = threading.Thread(target=kbd_f12, name=f'kbd_f12')
+    thr.start()
+
     # try:
     #     curses.wrapper(main)
     # except Exception as e:
     #     print(f"Error: {e}")
     #     sys.exit(1)
-
     curses.wrapper(main)
+
+    thr.join()
