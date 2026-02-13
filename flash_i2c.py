@@ -35,6 +35,9 @@ class FlashI2C(object):
                 with self.lock:
                     time.sleep(0.01)
                     result[self.sens_list[i]] = self.cnt
+                    self.cnt += 1
+                    if self.cnt >= 4096:
+                        self.cnt = 0
         else:
             for i in self.sens_list:
                 with self.lock:

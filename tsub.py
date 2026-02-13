@@ -1,5 +1,5 @@
-import sys
-import curses
+#import sys
+#import curses
 import threading
 import flash_i2c
 import configparser
@@ -24,14 +24,12 @@ def shutdown():
     __shutdown = True
 
 
-def main(stdscr):
+def main():
     config = configparser.ConfigParser()
     config.read('tsub.ini')
     all_sections = config.sections()
 
     # Clear screen
-    stdscr.clear()
-
     lock = threading.Lock()
     exps = []
     sensors = []
@@ -53,18 +51,20 @@ def main(stdscr):
         except ValueError:
             continue
 
-    stdscr.addstr(len(sensors) + 1, 0, 'Press "F12" to exit...')
-    stdscr.refresh()
-
-    max_len = 0
+    col_width = 0
     for i in range(len(sensors)):
         sens_str = f'{sensors[i]['name']}: '
-        if len(sens_str) > max_len:
-            max_len = len(sens_str)
-        stdscr.addstr(i, 0, sens_str)
-    stdscr.refresh()
+        if len(sens_str) > col_width:
+            col_width = len(sens_str)
+    col_width += 2
 
-    while not __shutdown:
+    for i in range(len(sensors)):
+        print(f'{sensors[i]['name']}'.ljust(col_width, ' '), end='')
+    print('')
+
+    readouts_num = int(config.get('DEFAULT', 'ReadoutsNum'))
+    avrg = [0] * len(sensors)
+    for i in range(readouts_num):
         exp_thr = []
         for i in range(len(exps)):
             exp_thr.append(threading.Thread(target=exps[i].run, name=f'exp{i}'))
@@ -74,22 +74,26 @@ def main(stdscr):
             thr.join()
 
         for i in range(len(sensors)):
-            stdscr.addstr(i, max_len, f'{exps[sensors[i]['n']].result[sensors[i]['input']]}')
-            stdscr.refresh()
+            readout = exps[sensors[i]['n']].result[sensors[i]['input']]
+            avrg[i] += readout
+            print(f'{readout}'.ljust(col_width, ' '), end='')
             exps[sensors[i]['n']].cnt += 1
+        print('')
 
-    stdscr.getch()  # Wait for keypress
+    print('-' * len(sensors) * col_width)
+    for i in range(len(sensors)):
+        print(f'{round(avrg[i]/readouts_num, 2)}'.ljust(col_width, ' '), end='')
 
 
 if __name__ == '__main__':
-    thr = threading.Thread(target=kbd_f12, name=f'kbd_f12')
-    thr.start()
+    # thr = threading.Thread(target=kbd_f12, name=f'kbd_f12')
+    # thr.start()
 
+    main()
     # try:
     #     curses.wrapper(main)
     # except Exception as e:
     #     print(f"Error: {e}")
     #     sys.exit(1)
-    curses.wrapper(main)
 
-    thr.join()
+    # thr.join()
