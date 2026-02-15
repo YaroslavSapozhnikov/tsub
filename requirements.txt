@@ -1,0 +1,6 @@
+evdev==1.9.3
+keyboard==0.13.5
+pyiArduinoI2Cexpander==1.0.4
+pynput==1.8.1
+python-xlib==0.33
+six==1.17.0
