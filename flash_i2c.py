@@ -13,7 +13,7 @@ class FlashI2C(object):
     def __init__(self, addr, lock: threading.Lock, sens_list: list[int]):
         self.__shutdown = False
         self.addr = addr
-        self.result = []
+        self.result = [None] * 8
         self.lock = lock
         self.cnt = 0
         self.sens_list: list[int] = sens_list
@@ -21,32 +21,33 @@ class FlashI2C(object):
         if test_mode:
             return
 
-        exp = pyiArduinoI2Cexpander(addr)
+        self.exp = pyiArduinoI2Cexpander(addr)
         for i in self.sens_list:
-            exp.pinMode(i, INPUT, ANALOG)
+            self.exp.pinMode(i, INPUT, ANALOG)
+            
 
     def shutdown(self):
         self.__shutdown = True
 
     def read(self):
-        result = [None] * 8
         if test_mode:
             for i in range(len(self.sens_list)):
                 with self.lock:
                     time.sleep(0.01)
-                    result[self.sens_list[i]] = self.cnt
+                    self.result[self.sens_list[i]] = self.cnt
                     self.cnt += 1
                     if self.cnt >= 4096:
                         self.cnt = 0
         else:
             for i in self.sens_list:
                 with self.lock:
-                    result[self.sens_list[i]] = (exp.analogReader(self.sens_list[i]))
-        return result
+                    self.result[self.sens_list[i]] = (self.exp.analogRead(self.sens_list[i]))
+        # return result
 
     def run(self):
-        self.result = self.read()
-        time.sleep(1)
+        self.read()
+        if test_mode:
+            time.sleep(0.1)
 
 
 if __name__ == '__main__':

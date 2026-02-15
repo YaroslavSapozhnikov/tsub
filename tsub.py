@@ -1,5 +1,6 @@
 #import sys
 #import curses
+import time
 import threading
 import flash_i2c
 import configparser
@@ -51,6 +52,8 @@ def main():
         except ValueError:
             continue
 
+    time.sleep(2)
+	
     col_width = 0
     for i in range(len(sensors)):
         sens_str = f'{sensors[i]['name']}: '
@@ -64,7 +67,7 @@ def main():
 
     readouts_num = int(config.get('DEFAULT', 'ReadoutsNum'))
     avrg = [0] * len(sensors)
-    for i in range(readouts_num):
+    for _ in range(readouts_num):
         exp_thr = []
         for i in range(len(exps)):
             exp_thr.append(threading.Thread(target=exps[i].run, name=f'exp{i}'))
@@ -83,6 +86,7 @@ def main():
     print('-' * len(sensors) * col_width)
     for i in range(len(sensors)):
         print(f'{round(avrg[i]/readouts_num, 2)}'.ljust(col_width, ' '), end='')
+    print('')
 
 
 if __name__ == '__main__':
