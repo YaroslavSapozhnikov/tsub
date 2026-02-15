@@ -1,5 +1,6 @@
 #import sys
 #import curses
+import os
 import time
 import threading
 import flash_i2c
