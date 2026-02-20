@@ -5,6 +5,7 @@ import time
 import threading
 import flash_i2c
 import configparser
+import math
 from pynput import keyboard
 
 
@@ -68,6 +69,7 @@ def main():
 
     readouts_num = int(config.get('DEFAULT', 'ReadoutsNum'))
     avrg = [0] * len(sensors)
+    avrg2 = [0] * len(sensors)
     for _ in range(readouts_num):
         exp_thr = []
         for i in range(len(exps)):
@@ -80,13 +82,17 @@ def main():
         for i in range(len(sensors)):
             readout = exps[sensors[i]['n']].result[sensors[i]['input']]
             avrg[i] += readout
-            print(f'{readout}'.ljust(col_width, ' '), end='')
+            avrg2[i] += readout ** 2
+#            print(f'{readout}'.ljust(col_width, ' '), end='')
             exps[sensors[i]['n']].cnt += 1
-        print('')
+#        print('')
 
     print('-' * len(sensors) * col_width)
     for i in range(len(sensors)):
-        print(f'{round(avrg[i]/readouts_num, 2)}'.ljust(col_width, ' '), end='')
+        print(f'{round(avrg[i]/(readouts_num/2), 2)}'.ljust(col_width, ' '), end='')
+    print('')
+    for i in range(len(sensors)):
+        print(f'{round(math.sqrt(avrg2[i]/(readouts_num/2)), 2)}'.ljust(col_width, ' '), end='')
     print('')
 
 

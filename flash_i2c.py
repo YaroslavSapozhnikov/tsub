@@ -24,7 +24,9 @@ class FlashI2C(object):
         self.exp = pyiArduinoI2Cexpander(addr)
         for i in self.sens_list:
             self.exp.pinMode(i, INPUT, ANALOG)
-            
+#            self.exp.pinPull(i, PULL_DOWN)
+        self.exp.analogAveraging(0)
+
 
     def shutdown(self):
         self.__shutdown = True
