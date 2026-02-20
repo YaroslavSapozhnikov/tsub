@@ -55,45 +55,24 @@ def main():
             continue
 
     time.sleep(2)
-	
-    col_width = 0
-    for i in range(len(sensors)):
-        sens_str = f'{sensors[i]['name']}: '
-        if len(sens_str) > col_width:
-            col_width = len(sens_str)
-    col_width += 2
-
-    for i in range(len(sensors)):
-        print(f'{sensors[i]['name']}'.ljust(col_width, ' '), end='')
-    print('')
-
+    col_width = max([len(sens['name']) for sens in sensors]) + 4
     readouts_num = int(config.get('DEFAULT', 'ReadoutsNum'))
-    avrg = [0] * len(sensors)
-    avrg2 = [0] * len(sensors)
-    for _ in range(readouts_num):
-        exp_thr = []
-        for i in range(len(exps)):
-            exp_thr.append(threading.Thread(target=exps[i].run, name=f'exp{i}'))
-            exp_thr[i].start()
 
-        for thr in exp_thr:
-            thr.join()
+    for sens in sensors:
+        print(f'{sens['name']}: '.ljust(col_width, ' '), end='')
 
-        for i in range(len(sensors)):
-            readout = exps[sensors[i]['n']].result[sensors[i]['input']]
-            avrg[i] += readout
-            avrg2[i] += readout ** 2
-#            print(f'{readout}'.ljust(col_width, ' '), end='')
-            exps[sensors[i]['n']].cnt += 1
-#        print('')
+        avrg = 0
+        avrg2 = 0
+        exp_n = sens['n']
+        exp_in = sens['input']
+        for _ in range(readouts_num):
+            readout = exps[exp_n].read(exp_in)
+            avrg += readout
+            avrg2 += readout ** 2
 
-    print('-' * len(sensors) * col_width)
-    for i in range(len(sensors)):
-        print(f'{round(avrg[i]/(readouts_num/2), 2)}'.ljust(col_width, ' '), end='')
-    print('')
-    for i in range(len(sensors)):
-        print(f'{round(math.sqrt(avrg2[i]/(readouts_num/2)), 2)}'.ljust(col_width, ' '), end='')
-    print('')
+        print(f'{round(avrg/(readouts_num/2), 2)}'.ljust(10, ' '), end='')
+        print(f'{round(math.sqrt(avrg2/(readouts_num/2)), 2)}'.ljust(10, ' '), end='')
+        print('')
 
 
 if __name__ == '__main__':
