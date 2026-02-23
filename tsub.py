@@ -69,6 +69,7 @@ def main():
             readout = exps[exp_n].read(exp_in)
             avrg += readout
             avrg2 += readout ** 2
+#            print(f'{readout}, ', end='')
 
         print(f'{round(avrg/(readouts_num/2), 2)}'.ljust(10, ' '), end='')
         print(f'{round(math.sqrt(avrg2/(readouts_num/2)), 2)}'.ljust(10, ' '), end='')

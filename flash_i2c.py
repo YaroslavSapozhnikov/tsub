@@ -35,11 +35,11 @@ class FlashI2C(object):
             for i in range(len(self.sens_list)):
                 with self.lock:
                     time.sleep(0.01)
-                    self.result[self.sens_list[i]] = 100 * (i + 1) + random.randint(-10, 10)
+                    self.result[self.sens_list[i]] = 100 * (i % 32 + 1) + random.randint(-10, 10)
         else:
             for i in range(len(self.sens_list)):
                 with self.lock:
-                    self.result[self.sens_list[i]] = (self.exp.analogRead(self.sens_list[i]))
+                    self.result[self.sens_list[i]] = 0xfff & (self.exp.analogRead(self.sens_list[i]))
         return self.result
 
     def read(self, sens):
@@ -49,7 +49,7 @@ class FlashI2C(object):
                 self.result[sens] = 100 * (sens + 1) + random.randint(-10, 10)
         else:
              with self.lock:
-                self.result[sens] = (self.exp.analogRead(sens))
+                self.result[sens] = 0xfff & (self.exp.analogRead(sens))
         return self.result[sens]
 
 
