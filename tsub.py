@@ -1,6 +1,3 @@
-#import sys
-#import curses
-import os
 import time
 import threading
 import flash_i2c
@@ -8,8 +5,8 @@ import configparser
 import math
 from pynput import keyboard
 import uuid
+from srv import Srv
 
-from request_srv import facility_id
 
 __shutdown = False
 
@@ -35,7 +32,7 @@ def get_id(name: str = 'tsub'):
 
 def main():
     config = configparser.ConfigParser()
-    config.read('tsub.ini')
+    config.read('tsub.ini', encoding='utf-8')
     all_sections = config.sections()
 
     # Clear screen
@@ -53,47 +50,43 @@ def main():
                         sens = int(opt)
                         if 0 <= sens < 8:
                             sens_list.append(sens)
-                            sensors.append({'n': len(exps), 'addr': addr, 'input': sens, 'name': config.get(sect, opt)})
+                            sensors.append({'name': config.get(sect, opt),
+                                            'addr': addr,
+                                            'input': sens,
+                                            'readout': "0.0"})
                     except ValueError:
                         continue
                 exps.append(flash_i2c.FlashI2C(addr, lock, sens_list=sens_list))
         except ValueError:
             continue
 
-    facility_id = get_id()
-    print(facility_id)
-    col_width = max([len(sens['name']) for sens in sensors]) + 4
+    facility = {
+        "id": get_id(),
+        "name": config.get("DEFAULT", "FacilityName"),
+        "addr": config.get("DEFAULT", "Address"),
+        "sensors": sensors,
+        "update_time": None
+    }
+
+    server = Srv(config.get('DEFAULT', 'Server'),
+                 int(config.get('DEFAULT', 'Port')))
+
     readouts_num = int(config.get('DEFAULT', 'ReadoutsNum'))
 
     time.sleep(2)
 
-    for sens in sensors:
-        print(f'{sens['name']}: '.ljust(col_width, ' '), end='')
-
-        avrg = 0
-        avrg2 = 0
-        exp_n = sens['n']
-        exp_in = sens['input']
-        for _ in range(readouts_num):
-            readout = exps[exp_n].read(exp_in)
-            avrg += readout
-            avrg2 += readout ** 2
-#            print(f'{readout}, ', end='')
-
-        print(f'{round(avrg/(readouts_num/2), 2)}'.ljust(10, ' '), end='')
-        print(f'{round(math.sqrt(avrg2/(readouts_num/2)), 2)}'.ljust(10, ' '), end='')
-        print('')
+    while True:
+        for i, sens in enumerate(sensors):
+            avrg = 0
+            avrg2 = 0
+            exp_in = sens['input']
+            for _ in range(readouts_num):
+                readout = exps[1].read(exp_in)
+                avrg += readout
+                avrg2 += readout ** 2
+            facility["sensors"][i]["readout"] = str(round((avrg/(readouts_num/2))*7/40, 1))
+        server.request(facility)
 
 
 if __name__ == '__main__':
-    # thr = threading.Thread(target=kbd_f12, name=f'kbd_f12')
-    # thr.start()
-
     main()
-    # try:
-    #     curses.wrapper(main)
-    # except Exception as e:
-    #     print(f"Error: {e}")
-    #     sys.exit(1)
-
-    # thr.join()
