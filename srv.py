@@ -1,3 +1,4 @@
+import datetime
 import requests
 
 # Базовый URL
@@ -5,28 +6,6 @@ BASE_URL = "http://yar.diskstation.me:8001"
 
 # ID объекта, который нужно обновить
 facility_id = 0  # Замените на нужный ID
-
-# Тело запроса
-data = {
-    "id": 0,
-    "name": "string",
-    "addr": "string",
-    "sensors": [
-        {
-            "name": "Датчик 1",
-            "addr": 10,
-            "input": 0,
-            "readout": "99.5"
-        },
-        {
-            "name": "Датчик 2",
-            "addr": 10,
-            "input": 1,
-            "readout": "50.0"
-        }
-    ],
-    "update_time": "2026-03-11T21:12:12.161Z"
-}
 
 
 class Srv(object):
@@ -36,6 +15,8 @@ class Srv(object):
     def request(self, facility: dict):
         url = f"{self.url}/facilities/{facility["id"]}"
 
+        if facility["update_time"] is None:
+            facility["update_time"] = datetime.now().replace(microsecond=0)
         # Отправляем PUT-запрос с JSON-данными
         response = requests.put(url, json=facility)
 
