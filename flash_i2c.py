@@ -24,7 +24,7 @@ class FlashI2C(object):
         for i in self.sens_list:
             self.exp.pinMode(i, INPUT, ANALOG)
 #            self.exp.pinPull(i, PULL_DOWN)
-        self.exp.analogAveraging(0)
+        self.exp.analogAveraging(100)
 
 
     def shutdown(self):

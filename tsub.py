@@ -81,7 +81,7 @@ def main():
             avrg2 = 0
             exp_in = sens['input']
             for _ in range(readouts_num):
-                readout = exps[1].read(exp_in)
+                readout = exps[0].read(exp_in)
                 avrg += readout
                 avrg2 += readout ** 2
             facility["sensors"][i]["readout"] = str(round((avrg/(readouts_num/2))*7/40, 1))

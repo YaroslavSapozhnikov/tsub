@@ -40,12 +40,12 @@ class Srv(object):
         response = requests.put(url, json=facility)
 
         # Проверяем ответ
-        if response.status_code == 200:
-            print("PUT-запрос выполнен успешно")
-            print("Ответ сервера:", response.json())
-        else:
-            print(f"Ошибка: {response.status_code}")
-            print("Текст ответа:", response.text)
+ #       if response.status_code == 200:
+ #           print("PUT-запрос выполнен успешно")
+ #           print("Ответ сервера:", response.json())
+ #       else:
+ #           print(f"Ошибка: {response.status_code}")
+ #           print("Текст ответа:", response.text)
 
 
 if __name__ == '__main__':
