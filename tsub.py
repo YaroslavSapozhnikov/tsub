@@ -7,7 +7,9 @@ import flash_i2c
 import configparser
 import math
 from pynput import keyboard
+import uuid
 
+from request_srv import facility_id
 
 __shutdown = False
 
@@ -25,6 +27,10 @@ def kbd_f12():
 def shutdown():
     global __shutdown
     __shutdown = True
+
+
+def get_id(name: str = 'tsub'):
+    return int(str(uuid.uuid5(uuid.NAMESPACE_OID, name)).split('-')[4], 16)
 
 
 def main():
@@ -54,9 +60,12 @@ def main():
         except ValueError:
             continue
 
-    time.sleep(2)
+    facility_id = get_id()
+    print(facility_id)
     col_width = max([len(sens['name']) for sens in sensors]) + 4
     readouts_num = int(config.get('DEFAULT', 'ReadoutsNum'))
+
+    time.sleep(2)
 
     for sens in sensors:
         print(f'{sens['name']}: '.ljust(col_width, ' '), end='')
