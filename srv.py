@@ -15,8 +15,8 @@ class Srv(object):
     def request(self, facility: dict):
         url = f"{self.url}/facilities/{facility["id"]}"
 
-        if facility["update_time"] is None:
-            facility["update_time"] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        facility["update_time"] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
         # Отправляем PUT-запрос с JSON-данными
         response = requests.put(url, json=facility)
 
