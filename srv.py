@@ -16,17 +16,17 @@ class Srv(object):
         url = f"{self.url}/facilities/{facility["id"]}"
 
         if facility["update_time"] is None:
-            facility["update_time"] = datetime.now().replace(microsecond=0)
+            facility["update_time"] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         # Отправляем PUT-запрос с JSON-данными
         response = requests.put(url, json=facility)
 
         # Проверяем ответ
- #       if response.status_code == 200:
- #           print("PUT-запрос выполнен успешно")
- #           print("Ответ сервера:", response.json())
- #       else:
- #           print(f"Ошибка: {response.status_code}")
- #           print("Текст ответа:", response.text)
+        # if response.status_code == 200:
+        #     print("PUT-запрос выполнен успешно")
+        #     print("Ответ сервера:", response.json())
+        # else:
+        #     print(f"Ошибка: {response.status_code}")
+        #     print("Текст ответа:", response.text)
 
 
 if __name__ == '__main__':
