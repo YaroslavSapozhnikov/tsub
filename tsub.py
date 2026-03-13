@@ -27,7 +27,7 @@ def shutdown():
 
 
 def get_id(name: str = 'tsub'):
-    return int(str(uuid.uuid5(uuid.NAMESPACE_OID, name)).split('-')[4], 16)
+    return int(str(uuid.uuid1()).split('-')[4], 16)
 
 
 def main():
