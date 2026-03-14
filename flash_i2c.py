@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 
 
 class FlashI2C(object):
-    def __init__(self, addr, lock: threading.Lock, sens_list: list[int]):
+    def __init__(self, addr, lock: threading.Lock, sens_list: list[int], hw_averaging: int):
         self.__shutdown = False
         self.addr = addr
         self.result = [None] * 8
@@ -24,7 +24,7 @@ class FlashI2C(object):
         for i in self.sens_list:
             self.exp.pinMode(i, INPUT, ANALOG)
 #            self.exp.pinPull(i, PULL_DOWN)
-        self.exp.analogAveraging(100)
+        self.exp.analogAveraging(hw_averaging)
 
 
     def shutdown(self):

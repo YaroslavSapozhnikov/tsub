@@ -36,6 +36,9 @@ def main():
     all_sections = config.sections()
 
     # Clear screen
+    readouts_num = int(config.get('DEFAULT', 'SoftwareAveraging', fallback=1))
+    hw_averaging = int(config.get('DEFAULT', 'HardwareAveraging', fallback=255))
+
     lock = threading.Lock()
     exps = []
     sensors = []
@@ -56,7 +59,7 @@ def main():
                                             'readout': "0.0"})
                     except ValueError:
                         continue
-                exps.append(flash_i2c.FlashI2C(addr, lock, sens_list=sens_list))
+                exps.append(flash_i2c.FlashI2C(addr, lock, sens_list=sens_list, hw_averaging=hw_averaging))
         except ValueError:
             continue
 
@@ -70,8 +73,6 @@ def main():
 
     server = Srv(config.get('DEFAULT', 'Server'),
                  int(config.get('DEFAULT', 'Port')))
-
-    readouts_num = int(config.get('DEFAULT', 'ReadoutsNum'))
 
     time.sleep(2)
 
