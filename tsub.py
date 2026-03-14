@@ -86,7 +86,7 @@ def main():
                 avrg += readout
                 avrg2 += readout ** 2
             # Уравнение прямой: y = 1.0949 * x
-            facility["sensors"][i]["readout"] = str(round((avrg/(readouts_num/2))*0.211, 1))
+            facility["sensors"][i]["readout"] = str(round((avrg/(readouts_num/2))*0.187, 1))
         server.request(facility)
 
 
