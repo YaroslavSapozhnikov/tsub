@@ -6,6 +6,7 @@ import math
 from pynput import keyboard
 import uuid
 from srv import Srv
+from id import get_device_id
 
 
 __shutdown = False
@@ -27,7 +28,8 @@ def shutdown():
 
 
 def get_id(name: str = 'tsub'):
-    return int(str(uuid.uuid1()).split('-')[4], 16)
+    # return int(str(uuid.uuid1()).split('-')[4], 16)
+    return int(get_device_id().split('-')[4], 16)
 
 
 def main():
